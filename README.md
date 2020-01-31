@@ -1,1 +1,1 @@
-"# Django" 
+So i'm learning django and this is just a tutorial app from official documentation for Django 2.2
