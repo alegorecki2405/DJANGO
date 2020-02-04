@@ -2,7 +2,7 @@ import datetime
 from django.utils import timezone
 from django.test import TestCase
 from .models import Question
-from django.utils import reverse
+from django.urls import reverse
 
 def create_question(question_text, days):
     time = timezone.now() + datetime.timedelta(days=days)
@@ -30,7 +30,7 @@ class QuestionIndexViewTests(TestCase):
     def test_past_question(self):
         create_question(question_text="Past Question", days=-30)
         response = self.client.get(reverse('polls:index'))
-        self.assertQuerysetEqual(response.context['latest_question_list'],['<Question: Past Question.>'])
+        self.assertQuerysetEqual(response.context['latest_question_list'],['<Question: Past Question>'])
     def test_future_question(self):
         create_question(question_text="Future Question", days=30)
         response = self.client.get(reverse('polls:index'))
@@ -40,12 +40,18 @@ class QuestionIndexViewTests(TestCase):
         create_question(question_text="Future Question", days=30)
         create_question(question_text="Past Question", days=-30)
         response = self.client.get(reverse('polls:index'))
-        self.assertQuerysetEqual(response.context(['latest_question_list'], ['<Question: Past Question>']))
+        self.assertQuerysetEqual(response.context['latest_question_list'], ['<Question: Past Question>'])
     def test_two_past_questions(self):
-        create_question(question_text="Past Question 1", days=-30)
-        create_question(question_text="Past Question 2", days=-29)
+        """
+        The questions index page may display multiple questions.
+        """
+        create_question(question_text="Past question 1.", days=-30)
+        create_question(question_text="Past question 2.", days=-5)
         response = self.client.get(reverse('polls:index'))
-        self.assertQuerysetEqual(response.context(['latest_question_list'] , ['<Question : Past Question 2>','<Question : Past Question 1>']))
+        self.assertQuerysetEqual(
+            response.context['latest_question_list'],
+            ['<Question: Past question 2.>', '<Question: Past question 1.>']
+        )
 class QuestionModelTests(TestCase):
     def test_was_published_recently_with_future_questions(self):
         time = timezone.now() + timezone.timedelta(days=30)
